@@ -30,11 +30,11 @@ USAGE
 <!-- commands -->
 * [`dorcp create [ID] [DESCRIPTION]`](#dorcp-create-id-description)
 * [`dorcp deploy`](#dorcp-deploy)
-* [`dorcp hello [FILE]`](#dorcp-hello-file)
 * [`dorcp help [COMMAND]`](#dorcp-help-command)
 * [`dorcp list [FILE]`](#dorcp-list-file)
 * [`dorcp refund [ID]`](#dorcp-refund-id)
 * [`dorcp status [ID]`](#dorcp-status-id)
+* [`dorcp topup [FILE]`](#dorcp-topup-file)
 
 ## `dorcp create [ID] [DESCRIPTION]`
 
@@ -64,26 +64,6 @@ OPTIONS
 
 _See code: [src/commands/deploy.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/deploy.ts)_
 
-## `dorcp hello [FILE]`
-
-describe the command here
-
-```
-USAGE
-  $ dorcp hello [FILE]
-
-OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
-
-EXAMPLE
-  $ dorcp hello
-  hello world from ./src/hello.ts!
-```
-
-_See code: [src/commands/hello.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/hello.ts)_
-
 ## `dorcp help [COMMAND]`
 
 display help for dorcp
@@ -110,9 +90,7 @@ USAGE
   $ dorcp list [FILE]
 
 OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
+  -h, --help  show CLI help
 ```
 
 _See code: [src/commands/list.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/list.ts)_
@@ -144,43 +122,22 @@ OPTIONS
 ```
 
 _See code: [src/commands/status.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/status.ts)_
-<!-- commandsstop -->
-* [`dorcp hello [FILE]`](#dorcp-hello-file)
-* [`dorcp help [COMMAND]`](#dorcp-help-command)
 
-## `dorcp hello [FILE]`
+## `dorcp topup [FILE]`
 
 describe the command here
 
 ```
 USAGE
-  $ dorcp hello [FILE]
+  $ dorcp topup [FILE]
 
 OPTIONS
   -f, --force
   -h, --help       show CLI help
   -n, --name=name  name to print
-
-EXAMPLE
-  $ dorcp hello
-  hello world from ./src/hello.ts!
 ```
 
-_See code: [src/commands/hello.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/hello.ts)_
-
-## `dorcp help [COMMAND]`
-
-display help for dorcp
-
-```
-USAGE
-  $ dorcp help [COMMAND]
-
-ARGUMENTS
-  COMMAND  command to show help for
-
-OPTIONS
-  --all  see all commands in CLI
-```
-
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
+_See code: [src/commands/topup.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/topup.ts)_
+<!-- commandsstop -->
+* [`dorcp hello [FILE]`](#dorcp-hello-file)
+* [`dorcp help [COMMAND]`](#dorcp-help-command)
