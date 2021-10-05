@@ -3,7 +3,7 @@ import { AccountData, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { ExecuteResult, InstantiateResult, SigningCosmWasmClient, UploadResult } from '@cosmjs/cosmwasm-stargate';
 import { Coin } from '@cosmjs/proto-signing/build/codec/cosmos/base/v1beta1/coin';
 import { CW20 } from "./cw20-base-helpers";
-import { DORCP } from './dorcp-helper';
+import { DORCP, InstantiateDORCP } from './dorcp-helper';
 
 export async function getWalletAndMainAccount(mnemonic: string) {
 	const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix: "wasm" });
@@ -77,42 +77,19 @@ async function instantiateSobzToken(contractData: UploadResult, account: Account
 	return instanceData
 }
 
-async function instantiateDoriumCommunityProposal(id: string, description: string, cw20Address1: string, contractData: UploadResult, account: AccountData, wallet: DirectSecp256k1HdWallet, client: SigningCosmWasmClient): Promise<[InstantiateResult, ExecuteResult]> {
-	const instantiateData = await client.instantiate(
-		account.address,
-		contractData.codeId,
-		{},
-		'instantiate() of the Rust smart contract'
-	);
-	const contractAddress = instantiateData.contractAddress;
-
-	const createMsg = {
-		create:{
-		description: description,
-		id: id,
-		proposer: account.address,
-		source: account.address,
-		validators: [account.address],
-		cw20_whitelist: [cw20Address1]
-	}}
-
-	const funds = Coin.fromJSON({denom: "ucosm", amount: "1"})
-	const createData = await client.execute(account.address, contractAddress, createMsg, "execute_create() of the Rust smart contract", [funds])
-	return [instantiateData, createData]
-}
-
 export async function deploy(con: any, client: SigningCosmWasmClient, wallet: DirectSecp256k1HdWallet, account: AccountData) {
 	try {
 		const inst_cw20_value = await instantiateValueToken(con.contracts.cw20, account, wallet, client);
 		console.log("CW20 (Value) Instantiated", inst_cw20_value);
 		const inst_cw20_sobz = await instantiateSobzToken(con.contracts.cw20, account, wallet, client);
 		console.log("CW20 (Sobz) Instantiated", inst_cw20_sobz);
-		const inst_dorcp = await instantiateDoriumCommunityProposal("test-dorcp", "this is just a test Proposal", inst_cw20_value.contractAddress, con.contracts.dorcp, account, wallet, client);
+
+		const inst_dorcp = await InstantiateDORCP(account.address, client, con.contracts.dorcp.codeId)
 		console.log("DORCP Instantiated", inst_dorcp);
 		const output = {
 			"valuetoken": inst_cw20_value.contractAddress,
 			"sobztoken": inst_cw20_sobz.contractAddress,
-			"dorcp": inst_dorcp[0].contractAddress,
+			"dorcp": inst_dorcp.contractAddress,
 		}
 		con.deployed_contracts = output;
 		return con

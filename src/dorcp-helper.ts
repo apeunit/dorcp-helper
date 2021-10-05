@@ -1,4 +1,4 @@
-import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { ExecuteResult, InstantiateResult, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { Coin } from "@cosmjs/stargate";
 import { toBase64, toUtf8 } from '@cosmjs/encoding';
 
@@ -6,21 +6,32 @@ interface DORCPInstance {
     readonly contractAddress: string
 
     // actions
-    create: (txSigner: string, id: string, description:string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin) => Promise<string>
-    topup: (txSigner: string, cw20Address: string, id: string, amountCW20: string) => Promise<string>
+    instantiate: (txSigner: string, codeId: number) => Promise<InstantiateResult>
+    create: (txSigner: string, id: string, description:string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin) => Promise<ExecuteResult>
+    topup: (txSigner: string, cw20Address: string, id: string, amountCW20: string) => Promise<ExecuteResult>
     status: (id: string) => Promise<any>
     list: () => Promise<any>
-    approve: (txSigner: string, id: string) => Promise<string>
-    refund: (txSigner: string, id: string) => Promise<string>
+    approve: (txSigner: string, id: string) => Promise<ExecuteResult>
+    refund: (txSigner: string, id: string) => Promise<ExecuteResult>
   }
 
 interface DORCPContract {
     use: (contractAddress: string) => DORCPInstance
 }
 
+export async function InstantiateDORCP(senderAddress: string, client: SigningCosmWasmClient, codeId: number) {
+    const instantiateData = await client.instantiate(
+        senderAddress,
+        codeId,
+        {},
+        'instantiate() of the Rust smart contract'
+    );
+    return instantiateData
+}
+
 export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
     const use = (contractAddress: string): DORCPInstance => {
-        const create = async (senderAddress: string, id: string, description: string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin): Promise<string> => {
+        const create = async (senderAddress: string, id: string, description: string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin): Promise<ExecuteResult> => {
             const createMsg = {
                 create: {
                     "id": id,
@@ -32,10 +43,10 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
                 }
             }
             const result = await client.execute(senderAddress, contractAddress, createMsg, "DORCP.create()", [funds])
-            return result.transactionHash
+            return result
         }
 
-        const topup = async (senderAddress: string, cw20Address: string, id: string, amountCW20: string): Promise<string> => {
+        const topup = async (senderAddress: string, cw20Address: string, id: string, amountCW20: string): Promise<ExecuteResult> => {
             // does not actually call the DORCP Escrow contract - this calls the
             // CW20 contract to send CW20 tokens to the Escrow contract, with a
             // message to the Escrow contract that it is for a particular escrow
@@ -43,7 +54,7 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
             const topup = {top_up: {id: id}}
             const topupBin = toBase64(toUtf8(JSON.stringify(topup)))
             const result = await client.execute(senderAddress, cw20Address, {send: {contract: contractAddress, amount: amountCW20, msg: topupBin}});
-            return result.transactionHash;
+            return result
         }
 
         const status = async(id: string): Promise<any> => {
@@ -56,16 +67,17 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
             return result
         }
 
-        const approve = async (senderAddress: string, id: string): Promise<string> => {
+        const approve = async (senderAddress: string, id: string): Promise<ExecuteResult> => {
             const result = await client.execute(senderAddress, contractAddress, {approve: {"id": id}});
-            return result.transactionHash;
+            return result;
         }
-        const refund = async (senderAddress: string, id: string): Promise <string> => {
+        const refund = async (senderAddress: string, id: string): Promise <ExecuteResult> => {
             const result = await client.execute(senderAddress, contractAddress, {refund: {"id": id}});
-            return result.transactionHash
+            return result
         }
         return {
             contractAddress,
+            instantiate,
             create,
             topup,
             status,
