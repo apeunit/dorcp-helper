@@ -5,7 +5,7 @@ import { DORCP } from '../dorcp-helper';
 import 'dotenv/config'
 const { MNEMONIC_MAIN, RPC_ENDPOINT } = process.env;
 export default class Status extends Command {
-  static description = 'describe the command here'
+  static description = 'Show detailed information about an ongoing DORCP'
 
   static flags = {
     help: flags.help({char: 'h'}),

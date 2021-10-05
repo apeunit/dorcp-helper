@@ -28,13 +28,30 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
+* [`dorcp approve [FILE]`](#dorcp-approve-file)
 * [`dorcp create [ID] [DESCRIPTION]`](#dorcp-create-id-description)
 * [`dorcp deploy`](#dorcp-deploy)
 * [`dorcp help [COMMAND]`](#dorcp-help-command)
 * [`dorcp list [FILE]`](#dorcp-list-file)
 * [`dorcp refund [ID]`](#dorcp-refund-id)
 * [`dorcp status [ID]`](#dorcp-status-id)
-* [`dorcp topup [FILE]`](#dorcp-topup-file)
+* [`dorcp topup [ID] [AMOUNT]`](#dorcp-topup-id-amount)
+
+## `dorcp approve [FILE]`
+
+describe the command here
+
+```
+USAGE
+  $ dorcp approve [FILE]
+
+OPTIONS
+  -f, --force
+  -h, --help       show CLI help
+  -n, --name=name  name to print
+```
+
+_See code: [src/commands/approve.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/approve.ts)_
 
 ## `dorcp create [ID] [DESCRIPTION]`
 
@@ -123,18 +140,16 @@ OPTIONS
 
 _See code: [src/commands/status.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/status.ts)_
 
-## `dorcp topup [FILE]`
+## `dorcp topup [ID] [AMOUNT]`
 
-describe the command here
+send some CW20 tokens to a DORium Community Proposal
 
 ```
 USAGE
-  $ dorcp topup [FILE]
+  $ dorcp topup [ID] [AMOUNT]
 
 OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
+  -h, --help  show CLI help
 ```
 
 _See code: [src/commands/topup.ts](https://github.com/randomshinichi/dorcpcli/blob/v0.0.0/src/commands/topup.ts)_
