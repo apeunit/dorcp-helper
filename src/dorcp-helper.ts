@@ -6,7 +6,6 @@ interface DORCPInstance {
     readonly contractAddress: string
 
     // actions
-    instantiate: (txSigner: string, codeId: number) => Promise<InstantiateResult>
     create: (txSigner: string, id: string, description:string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin) => Promise<ExecuteResult>
     topup: (txSigner: string, cw20Address: string, id: string, amountCW20: string) => Promise<ExecuteResult>
     status: (id: string) => Promise<any>
@@ -77,7 +76,6 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
         }
         return {
             contractAddress,
-            instantiate,
             create,
             topup,
             status,
