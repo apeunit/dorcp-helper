@@ -1,15 +1,17 @@
 import { ExecuteResult, InstantiateResult, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { Coin } from "@cosmjs/stargate";
 import { toBase64, toUtf8 } from '@cosmjs/encoding';
+import { url } from "inspector";
 
 interface DORCPInstance {
     readonly contractAddress: string
 
     // actions
-    create: (txSigner: string, id: string, description:string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin) => Promise<ExecuteResult>
+    create: (txSigner: string, id: string, url: string, description:string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin) => Promise<ExecuteResult>
     topup: (txSigner: string, cw20Address: string, id: string, amountCW20: string) => Promise<ExecuteResult>
     status: (id: string) => Promise<any>
     list: () => Promise<any>
+    listdetailed: () => Promise<any>
     approve: (txSigner: string, id: string) => Promise<ExecuteResult>
     refund: (txSigner: string, id: string) => Promise<ExecuteResult>
   }
@@ -30,10 +32,11 @@ export async function InstantiateDORCP(senderAddress: string, client: SigningCos
 
 export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
     const use = (contractAddress: string): DORCPInstance => {
-        const create = async (senderAddress: string, id: string, description: string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin): Promise<ExecuteResult> => {
+        const create = async (senderAddress: string, id: string, url: string, description: string, proposer: string, validators: string[], cw20_whitelist: string[], funds: Coin): Promise<ExecuteResult> => {
             const createMsg = {
                 create: {
                     "id": id,
+                    "url": url,
                     "description": description,
                     "validators": validators,
                     "proposer": proposer,
@@ -66,6 +69,11 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
             return result
         }
 
+        const listdetailed = async(): Promise<any> => {
+            const result = await client.queryContractSmart(contractAddress, {list_detailed: {}})
+            return result
+        }
+
         const approve = async (senderAddress: string, id: string): Promise<ExecuteResult> => {
             const result = await client.execute(senderAddress, contractAddress, {approve: {"id": id}});
             return result;
@@ -80,6 +88,7 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
             topup,
             status,
             list,
+            listdetailed,
             approve,
             refund,
         };

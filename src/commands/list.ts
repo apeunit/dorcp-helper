@@ -9,6 +9,7 @@ export default class List extends Command {
 
   static flags = {
     help: flags.help({char: 'h'}),
+    detailed: flags.boolean({char: 'd', default:false})
   }
 
   static args = [{name: 'file'}]
@@ -21,7 +22,11 @@ export default class List extends Command {
     const client = await getSigningClient(RPC_ENDPOINT, wallet);
 
     const dorcp = DORCP(client).use(c.deployed_contracts.dorcp)
-    const result = await dorcp.list()
-    console.dir(result)
+
+    if(flags.detailed) {
+      console.dir(await dorcp.listdetailed(), {depth:null})
+    } else {
+      console.dir(await dorcp.list())
+    }
   }
 }
