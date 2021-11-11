@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { AccountData, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import {GasPrice} from "@cosmjs/stargate";
 import { ExecuteResult, InstantiateResult, SigningCosmWasmClient, UploadResult } from '@cosmjs/cosmwasm-stargate';
 import { Coin } from '@cosmjs/proto-signing/build/codec/cosmos/base/v1beta1/coin';
 import { CW20 } from "./cw20-base-helpers";
@@ -13,7 +14,7 @@ export async function getWalletAndMainAccount(mnemonic: string) {
 }
 
 export async function getSigningClient(rpcEndpoint: string, wallet: DirectSecp256k1HdWallet) {
-    return await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix: "wasm" });
+    return await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix: "wasm", gasPrice: GasPrice.fromString("0.001udor")});
 }
 
 export function readContractsJson() {
