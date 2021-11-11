@@ -1,10 +1,11 @@
 import * as fs from 'fs';
 import { AccountData, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import {GasPrice} from "@cosmjs/stargate";
+import {calculateFee, StdFee, GasPrice} from "@cosmjs/stargate";
 import { ExecuteResult, InstantiateResult, SigningCosmWasmClient, UploadResult } from '@cosmjs/cosmwasm-stargate';
-import { Coin } from '@cosmjs/proto-signing/build/codec/cosmos/base/v1beta1/coin';
+import { parseCoins } from '@cosmjs/proto-signing';
 import { CW20 } from "./cw20-base-helpers";
 import { DORCP, InstantiateDORCP } from './dorcp-helper';
+export const doriumTxFee = calculateFee(10000000, GasPrice.fromString("0.001udor"));
 
 export async function getWalletAndMainAccount(mnemonic: string) {
 	const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix: "wasm" });
@@ -14,7 +15,7 @@ export async function getWalletAndMainAccount(mnemonic: string) {
 }
 
 export async function getSigningClient(rpcEndpoint: string, wallet: DirectSecp256k1HdWallet) {
-    return await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix: "wasm", gasPrice: GasPrice.fromString("0.001udor")});
+    return await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix: "wasm"});
 }
 
 export function readContractsJson() {
@@ -31,9 +32,9 @@ export async function uploadContractsSaveResult(cw20WasmPath: string, dorcpWasmP
 	const cw20Contract = fs.readFileSync(cw20WasmPath)
  	const dorcpContract = fs.readFileSync(dorcpWasmPath);
 
-	const con_cw20 = await client.upload(senderAddress, cw20Contract);
+	const con_cw20 = await client.upload(senderAddress, cw20Contract, doriumTxFee);
 	console.log("CW20 Uploaded Contract", con_cw20);
-	const con_dorcp = await client.upload(senderAddress, dorcpContract);
+	const con_dorcp = await client.upload(senderAddress, dorcpContract, doriumTxFee);
 	console.log("DORCP Uploaded Contract", con_dorcp);
 	const contracts = {
 		"contracts": {
@@ -57,7 +58,7 @@ async function instantiateValueToken(contractData: UploadResult, account: Accoun
 		},
 	};
 
-	const instanceData = await client.instantiate(account.address, contractData.codeId, initMsg, "instantiating the DORCP contract");
+	const instanceData = await client.instantiate(account.address, contractData.codeId, initMsg, "instantiating the DORCP contract", doriumTxFee);
 	return instanceData
 }
 
@@ -74,7 +75,7 @@ async function instantiateSobzToken(contractData: UploadResult, account: Account
 		},
 	};
 
-	const instanceData = await client.instantiate(account.address, contractData.codeId, initMsg, "instantiating the DORCP contract");
+	const instanceData = await client.instantiate(account.address, contractData.codeId, initMsg, "instantiating the DORCP contract", doriumTxFee);
 	return instanceData
 }
 
@@ -100,25 +101,3 @@ export async function deploy(con: any, client: SigningCosmWasmClient, wallet: Di
 }
 
 const generateRandomString = (length=6)=>Math.random().toString(20).substr(2, length)
-
-export async function dorcpLifecycle() {
-	let {wallet, account} = await getWalletAndMainAccount();
-
-	const client = await SigningCosmWasmClient.connectWithSigner(RPC_ENDPOINT, wallet, options);
-
-	var c = readContractsJson()
-	const dorcp = DORCP(client).use(c.deployed_contracts.dorcp)
-	const proposalId = generateRandomString()
-	var result = await dorcp.create(account.address, proposalId, "description goes here", account.address, [account.address], [c.deployed_contracts.valuetoken], Coin.fromJSON({denom: "udor", amount: "1"}))
-	console.dir(result)
-
-	var result = await dorcp.topup(account.address, c.deployed_contracts.valuetoken, proposalId, "1000")
-	console.dir(result)
-
-	console.dir(await dorcp.status(proposalId))
-
-	// result = await dorcp.approve(account.address, proposalId)
-	// console.dir(result)
-	result = await dorcp.refund(account.address, proposalId)
-	console.dir(result)
-}

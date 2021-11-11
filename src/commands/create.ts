@@ -1,9 +1,10 @@
 import {Command, flags} from '@oclif/command'
 import { readContractsJson, getWalletAndMainAccount, getSigningClient} from '../deploy'
-import { Coin } from '@cosmjs/proto-signing/build/codec/cosmos/base/v1beta1/coin';
 import { DORCP } from '../dorcp-helper';
 
 import 'dotenv/config'
+import { parseCoins } from '@cosmjs/proto-signing';
+
 const { MNEMONIC_MAIN, RPC_ENDPOINT } = process.env;
 export default class Create extends Command {
   static description = 'Create a new DORium Community Proposal'
@@ -22,7 +23,7 @@ export default class Create extends Command {
 
     var c  = readContractsJson();
     const dorcp = DORCP(client).use(c.deployed_contracts.dorcp)
-    var result = await dorcp.create(account.address, args.id, args.url, args.description, account.address, [account.address], [c.deployed_contracts.valuetoken], Coin.fromJSON({denom: "udor", amount: "1"}))
+    var result = await dorcp.create(account.address, args.id, args.url, args.description, account.address, [account.address], [c.deployed_contracts.valuetoken], parseCoins("1udor")[0])
     console.dir(result)
   }
 }

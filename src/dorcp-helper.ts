@@ -2,6 +2,7 @@ import { ExecuteResult, InstantiateResult, SigningCosmWasmClient } from "@cosmjs
 import { Coin } from "@cosmjs/stargate";
 import { toBase64, toUtf8 } from '@cosmjs/encoding';
 import { url } from "inspector";
+import { doriumTxFee } from "./deploy";
 
 interface DORCPInstance {
     readonly contractAddress: string
@@ -25,7 +26,8 @@ export async function InstantiateDORCP(senderAddress: string, client: SigningCos
         senderAddress,
         codeId,
         {},
-        'instantiate() of the Rust smart contract'
+        'instantiate() of the Rust smart contract',
+        doriumTxFee
     );
     return instantiateData
 }
@@ -44,7 +46,7 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
                     "cw20_whitelist": cw20_whitelist,
                 }
             }
-            const result = await client.execute(senderAddress, contractAddress, createMsg, "DORCP.create()", [funds])
+            const result = await client.execute(senderAddress, contractAddress, createMsg, doriumTxFee, "DORCP.create()", [funds])
             return result
         }
 
@@ -55,7 +57,7 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
             // id.
             const topup = {top_up: {id: id}}
             const topupBin = toBase64(toUtf8(JSON.stringify(topup)))
-            const result = await client.execute(senderAddress, cw20Address, {send: {contract: contractAddress, amount: amountCW20, msg: topupBin}});
+            const result = await client.execute(senderAddress, cw20Address, {send: {contract: contractAddress, amount: amountCW20, msg: topupBin}}, doriumTxFee);
             return result
         }
 
@@ -75,11 +77,11 @@ export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {
         }
 
         const approve = async (senderAddress: string, id: string): Promise<ExecuteResult> => {
-            const result = await client.execute(senderAddress, contractAddress, {approve: {"id": id}});
+            const result = await client.execute(senderAddress, contractAddress, {approve: {"id": id}}, doriumTxFee);
             return result;
         }
         const refund = async (senderAddress: string, id: string): Promise <ExecuteResult> => {
-            const result = await client.execute(senderAddress, contractAddress, {refund: {"id": id}});
+            const result = await client.execute(senderAddress, contractAddress, {refund: {"id": id}}, doriumTxFee);
             return result
         }
         return {

@@ -8,7 +8,7 @@
   },
   "bugs": "https://github.com/randomshinichi/dorcpcli/issues",
   "devDependencies": {
-    "@cosmjs/cli": "^0.25.6",
+    "@cosmjs/cli": "^0.26.4",
     "@oclif/dev-cli": "^1.26.0",
     "@oclif/test": "^1.2.8",
     "@types/chai": "^4.2.21",
@@ -56,10 +56,10 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@cosmjs/cosmwasm-stargate": "^0.25.6",
-    "@cosmjs/crypto": "^0.25.6",
-    "@cosmjs/proto-signing": "^0.25.6",
-    "@cosmjs/stargate": "^0.25.6",
+    "@cosmjs/cosmwasm-stargate": "^0.26.4",
+    "@cosmjs/crypto": "^0.26.4",
+    "@cosmjs/proto-signing": "^0.26.4",
+    "@cosmjs/stargate": "^0.26.4",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.3",
