@@ -108,7 +108,7 @@ export async function dorcpLifecycle() {
 	var c = readContractsJson()
 	const dorcp = DORCP(client).use(c.deployed_contracts.dorcp)
 	const proposalId = generateRandomString()
-	var result = await dorcp.create(account.address, proposalId, "description goes here", account.address, [account.address], [c.deployed_contracts.valuetoken], Coin.fromJSON({denom: "ucosm", amount: "1"}))
+	var result = await dorcp.create(account.address, proposalId, "description goes here", account.address, [account.address], [c.deployed_contracts.valuetoken], Coin.fromJSON({denom: "udor", amount: "1"}))
 	console.dir(result)
 
 	var result = await dorcp.topup(account.address, c.deployed_contracts.valuetoken, proposalId, "1000")

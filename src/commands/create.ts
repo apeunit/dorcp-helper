@@ -22,7 +22,7 @@ export default class Create extends Command {
 
     var c  = readContractsJson();
     const dorcp = DORCP(client).use(c.deployed_contracts.dorcp)
-    var result = await dorcp.create(account.address, args.id, args.url, args.description, account.address, [account.address], [c.deployed_contracts.valuetoken], Coin.fromJSON({denom: "ucosm", amount: "1"}))
+    var result = await dorcp.create(account.address, args.id, args.url, args.description, account.address, [account.address], [c.deployed_contracts.valuetoken], Coin.fromJSON({denom: "udor", amount: "1"}))
     console.dir(result)
   }
 }
