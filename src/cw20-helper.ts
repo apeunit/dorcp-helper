@@ -1,8 +1,8 @@
 import { toUtf8, toBase64 } from "@cosmjs/encoding"
 import { calculateFee } from "@cosmjs/stargate"
-import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { ExecuteResult, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { Options } from "./base-helper"
-import "axios"
+import axios from "axios"
 /*
  * This is a set of helpers meant for use with @cosmjs/cli
  * Look at https://raw.githubusercontent.com/CosmWasm/cw-plus/master/contracts/base-helpers.ts on how to setup a wallet
@@ -61,7 +61,7 @@ interface CW20Instance {
   readonly contractAddress: string
 
   // queries
-  balance: (address?: string) => Promise<string>
+  balance: (address: string) => Promise<string>
   allowance: (owner: string, spender: string) => Promise<AllowanceResponse>
   allAllowances: (owner: string, startAfter?: string, limit?: number) => Promise<AllAllowancesResponse>
   allAccounts: (startAfter?: string, limit?: number) => Promise<readonly string[]>
@@ -70,8 +70,8 @@ interface CW20Instance {
 
   // actions
   mint: (txSigner: string, recipient: string, amount: string) => Promise<string>
-  transfer: (txSigner: string, recipient: string, amount: string) => Promise<string>
-  send: (txSigner: string, recipient: string, amount: string, msg: Record<string, unknown>) => Promise<string>
+  transfer: (txSigner: string, recipient: string, amount: string) => Promise<ExecuteResult>
+  send: (txSigner: string, recipient: string, amount: string, msg: Record<string, unknown>) => Promise<ExecuteResult>
   burn: (txSigner: string, amount: string) => Promise<string>
   increaseAllowance: (txSigner: string, recipient: string, amount: string) => Promise<string>
   decreaseAllowance: (txSigner: string, recipient: string, amount: string) => Promise<string>
@@ -148,11 +148,11 @@ export const CW20 = (client: SigningCosmWasmClient, options: Options): CW20Contr
     }
 
     // transfers tokens, returns transactionHash
-    const transfer = async (senderAddress: string, recipient: string, amount: string): Promise<string> => {
+    const transfer = async (senderAddress: string, recipient: string, amount: string): Promise<ExecuteResult> => {
       const fee = calculateFee(options.fees.exec, options.gasPrice)
 
       const result = await client.execute(senderAddress, contractAddress, { transfer: { recipient, amount } }, fee)
-      return result.transactionHash
+      return result
     }
 
     // burns tokens, returns transactionHash
@@ -213,16 +213,16 @@ export const CW20 = (client: SigningCosmWasmClient, options: Options): CW20Contr
       recipient: string,
       amount: string,
       msg: Record<string, unknown>,
-    ): Promise<string> => {
+    ): Promise<ExecuteResult> => {
       const fee = calculateFee(options.fees.exec, options.gasPrice)
 
       const result = await client.execute(
         senderAddress,
         contractAddress,
-        { send: { recipient, amount, msg: jsonToBinary(msg) } },
+        { send: { contract: recipient, amount: amount, msg: jsonToBinary(msg) } },
         fee,
       )
-      return result.transactionHash
+      return result
     }
 
     const sendFrom = async (

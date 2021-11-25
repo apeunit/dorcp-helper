@@ -1,10 +1,8 @@
 import * as fs from 'fs';
 import { AccountData, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import {calculateFee, StdFee, GasPrice} from "@cosmjs/stargate";
-import { ExecuteResult, InstantiateResult, SigningCosmWasmClient, UploadResult } from '@cosmjs/cosmwasm-stargate';
-import { parseCoins } from '@cosmjs/proto-signing';
-import { CW20 } from "./cw20-base-helpers";
-import { DORCP, InstantiateDORCP } from './dorcp-helper';
+import { SigningCosmWasmClient, UploadResult } from '@cosmjs/cosmwasm-stargate';
+import { DORCP, DORNEX, InstantiateDORCP, InstantiateDORNEX, SetTokensDORNEX } from './dorcp-helper';
 export const doriumTxFee = calculateFee(10000000, GasPrice.fromString("0.001udor"));
 
 export async function getWalletAndMainAccount(mnemonic: string) {
@@ -28,24 +26,28 @@ export function writeContractsJson(obj: any) {
 }
 
 
-export async function uploadContractsSaveResult(cw20WasmPath: string, dorcpWasmPath: string, client: SigningCosmWasmClient, senderAddress: string) {
-	const cw20Contract = fs.readFileSync(cw20WasmPath)
+export async function uploadContractsSaveResult(cw20WasmPath: string, dorcpWasmPath: string, dornexPath: string, client: SigningCosmWasmClient, senderAddress: string) {
+	const cw20Contract = fs.readFileSync(cw20WasmPath);
  	const dorcpContract = fs.readFileSync(dorcpWasmPath);
+	const dornexContract = fs.readFileSync(dornexPath);
 
+	console.log("Uploading CW20 Contract");
 	const con_cw20 = await client.upload(senderAddress, cw20Contract, doriumTxFee);
-	console.log("CW20 Uploaded Contract", con_cw20);
+	console.log("Uploading DORCP Contract");
 	const con_dorcp = await client.upload(senderAddress, dorcpContract, doriumTxFee);
-	console.log("DORCP Uploaded Contract", con_dorcp);
+	console.log("Uploading DORNEX Contract");
+	const con_dornex = await client.upload(senderAddress, dornexContract, doriumTxFee);
 	const contracts = {
 		"contracts": {
 			cw20: {codeId: con_cw20.codeId, transactionHash: con_cw20.transactionHash},
 			dorcp: {codeId: con_dorcp.codeId, transactionHash: con_dorcp.transactionHash},
+			dornex: {codeId: con_dornex.codeId, transactionHash: con_dornex.transactionHash},
 		},
 	}
 	return contracts
 }
 
-async function instantiateValueToken(contractData: UploadResult, account: AccountData, wallet: DirectSecp256k1HdWallet, client: SigningCosmWasmClient) {
+async function instantiateValueToken(contractData: UploadResult, minter: string, account: AccountData, wallet: DirectSecp256k1HdWallet, client: SigningCosmWasmClient) {
 	const initMsg = {
 		name: 'Dorium Value Token',
 		symbol: 'TREE',
@@ -54,7 +56,7 @@ async function instantiateValueToken(contractData: UploadResult, account: Accoun
 			{ address: 'wasm1ryuawewrukex42yh2kpydtpdh90ex096kaajek', amount: '3040000000000' }, // number of trees in the world according to Google
 		],
 		mint: {
-			minter: 'wasm1ryuawewrukex42yh2kpydtpdh90ex096kaajek',
+			minter,
 		},
 	};
 
@@ -62,16 +64,16 @@ async function instantiateValueToken(contractData: UploadResult, account: Accoun
 	return instanceData
 }
 
-async function instantiateSobzToken(contractData: UploadResult, account: AccountData, wallet: DirectSecp256k1HdWallet, client: SigningCosmWasmClient) {
+async function instantiateSobzToken(contractData: UploadResult, minter: string, account: AccountData, wallet: DirectSecp256k1HdWallet, client: SigningCosmWasmClient) {
 	const initMsg = {
 		name: 'Dorium Social Business Token',
 		symbol: 'SOBZ',
 		decimals: 2,
 		initial_balances: [
-			{ address: 'wasm1ryuawewrukex42yh2kpydtpdh90ex096kaajek', amount: '10000000000' }, // whatever, we can mint more later?
+			// whatever, we can mint more later?
 		],
 		mint: {
-			minter: 'wasm1ryuawewrukex42yh2kpydtpdh90ex096kaajek',
+			minter,
 		},
 	};
 
@@ -81,17 +83,28 @@ async function instantiateSobzToken(contractData: UploadResult, account: Account
 
 export async function deploy(con: any, client: SigningCosmWasmClient, wallet: DirectSecp256k1HdWallet, account: AccountData) {
 	try {
-		const inst_cw20_value = await instantiateValueToken(con.contracts.cw20, account, wallet, client);
+		const inst_dornex = await InstantiateDORNEX(account.address, client, con.contracts.dornex.codeId)
+		console.log("DORNEX Instantiated", inst_dornex);
+		console.dir(inst_dornex, {depth:null});
+
+		const inst_cw20_value = await instantiateValueToken(con.contracts.cw20, inst_dornex.contractAddress, account, wallet, client);
 		console.log("CW20 (Value) Instantiated", inst_cw20_value);
-		const inst_cw20_sobz = await instantiateSobzToken(con.contracts.cw20, account, wallet, client);
+		const inst_cw20_sobz = await instantiateSobzToken(con.contracts.cw20, inst_dornex.contractAddress, account, wallet, client);
 		console.log("CW20 (Sobz) Instantiated", inst_cw20_sobz);
 
 		const inst_dorcp = await InstantiateDORCP(account.address, client, con.contracts.dorcp.codeId)
 		console.log("DORCP Instantiated", inst_dorcp);
+
+		console.log("DORNEX: Telling It About Value/SoBz Tokens");
+		const dornex = DORNEX(client).use(inst_dornex.contractAddress);
+		const settokens_dornex = await dornex.set_tokens(account.address, inst_cw20_value.contractAddress, inst_cw20_sobz.contractAddress)
+		console.dir(settokens_dornex, {depth:null});
+
 		const output = {
 			"valuetoken": inst_cw20_value.contractAddress,
 			"sobztoken": inst_cw20_sobz.contractAddress,
 			"dorcp": inst_dorcp.contractAddress,
+			"dornex": inst_dornex.contractAddress,
 		}
 		con.deployed_contracts = output;
 		return con

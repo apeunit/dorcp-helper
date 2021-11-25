@@ -1,8 +1,16 @@
 import { ExecuteResult, InstantiateResult, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { Coin } from "@cosmjs/stargate";
 import { toBase64, toUtf8 } from '@cosmjs/encoding';
-import { url } from "inspector";
 import { doriumTxFee } from "./deploy";
+
+
+interface DORCPContract {
+    use: (contractAddress: string) => DORCPInstance
+}
+
+interface DORNEXContract {
+    use: (contractAddress: string) => DORNEXInstance
+}
 
 interface DORCPInstance {
     readonly contractAddress: string
@@ -17,8 +25,11 @@ interface DORCPInstance {
     refund: (txSigner: string, id: string) => Promise<ExecuteResult>
   }
 
-interface DORCPContract {
-    use: (contractAddress: string) => DORCPInstance
+interface DORNEXInstance {
+    readonly contractAddress: string
+
+    set_tokens: (senderAddress: string, value_token_address: string, sobz_token_address: string) => Promise<ExecuteResult>
+    exchanged: () => Promise<number>
 }
 
 export async function InstantiateDORCP(senderAddress: string, client: SigningCosmWasmClient, codeId: number) {
@@ -26,10 +37,45 @@ export async function InstantiateDORCP(senderAddress: string, client: SigningCos
         senderAddress,
         codeId,
         {},
-        'instantiate() of the Rust smart contract',
+        'DORCP instantiate()',
         doriumTxFee
     );
     return instantiateData
+}
+
+export async function InstantiateDORNEX(senderAddress: string, client: SigningCosmWasmClient, codeId: number) {
+    const instantiateData = await client.instantiate(
+        senderAddress,
+        codeId,
+        {},
+        'DORNEX instantiate()',
+        doriumTxFee
+    );
+    return instantiateData
+}
+
+export const DORNEX =(client: SigningCosmWasmClient): DORNEXContract => {
+    const use = (contractAddress: string): DORNEXInstance => {
+        const set_tokens = async (senderAddress: string, value_token_address: string, sobz_token_address: string): Promise<ExecuteResult> => {
+            const result = await client.execute(
+                senderAddress,
+                contractAddress,
+                {set_tokens: {value_token_address, sobz_token_address}},
+                doriumTxFee,
+                'DORNEX SetTokens()',
+            );
+            return result
+        }
+        const exchanged = async (): Promise<number> => {
+            const result = await client.queryContractSmart(
+                contractAddress,
+                {get_exchanged: {}},
+            );
+            return result.exchanged
+        }
+        return { contractAddress, set_tokens, exchanged }
+    }
+    return {use}
 }
 
 export const DORCP = (client: SigningCosmWasmClient): DORCPContract => {

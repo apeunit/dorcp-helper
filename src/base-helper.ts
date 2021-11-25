@@ -36,20 +36,20 @@ export interface Options {
   readonly gasPrice: GasPrice,
 }
 
-const pebblenetOptions: Options = {
-  httpUrl: 'https://rpc.pebblenet.cosmwasm.com',
-  networkId: 'pebblenet-1',
+export const doriumOptions: Options = {
+  httpUrl: 'https://localhost:26657',
+  networkId: 'localnet',
   bech32prefix: 'wasm',
-  feeToken: 'upebble',
-  faucetUrl: 'https://faucet.pebblenet.cosmwasm.com/credit',
+  feeToken: 'udor',
+  faucetUrl: '',
   hdPath: makeCosmoshubPath(0),
-  defaultKeyFile: path.join(process.env.HOME, ".pebblenet.key"),
+  defaultKeyFile: '',
   fees: {
     upload: 1500000,
     init: 500000,
-    exec: 200000,
+    exec: 2000000,
   },
-  gasPrice: GasPrice.fromString("0.01upebble"),
+  gasPrice: GasPrice.fromString("0.01udor"),
 }
 
 interface Network {
