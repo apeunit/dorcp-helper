@@ -1,0 +1,6 @@
+MNEMONIC_MAIN=""
+MNEMONIC_VALIDATOR=""
+RPC_ENDPOINT=http://localhost:26657
+ERC20_CONTRACT=./binaries/cw20_base-v0.10.2.wasm
+DORIUM_PROPOSAL_CONTRACT=./binaries/proposal.wasm
+DORNEX_CONTRACT=./binaries/exchange.wasm

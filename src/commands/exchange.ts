@@ -6,8 +6,8 @@ import 'dotenv/config'
 import { DORNEX } from '../dorium-helper';
 
 const { MNEMONIC_MAIN, RPC_ENDPOINT } = process.env;
-export default class Exchange extends Command {
-  static description = 'Send Value Token to DORNEX'
+export default class TestExchange extends Command {
+  static description = 'Send Value Token to DORNEX, getting SoBz token in return'
 
   static flags = {
     help: flags.help({char: 'h'})
@@ -16,7 +16,7 @@ export default class Exchange extends Command {
   static args = [{name: 'amount'}]
 
   async run() {
-    const {args} = this.parse(Exchange);
+    const {args} = this.parse(TestExchange);
 
     let {wallet, account} = await getWalletAndMainAccount(MNEMONIC_MAIN);
     const client = await getSigningClient(RPC_ENDPOINT, wallet)
@@ -27,6 +27,8 @@ export default class Exchange extends Command {
     const sobz = CW20(client, doriumOptions).use(c.deployed_contracts.sobztoken);
     var value_orig_balance = await value.balance(account.address);
     console.log(account.address, "value token balance:", value_orig_balance);
+    var sobz_orig_balance = await sobz.balance(account.address);
+    console.log(account.address, "sobz token balance:", sobz_orig_balance);
 
     console.log("Transferring", args.amount, "value token to", c.deployed_contracts.dornex)
     const transferResult = await value.send(account.address, c.deployed_contracts.dornex, args.amount, {"send": ""})
