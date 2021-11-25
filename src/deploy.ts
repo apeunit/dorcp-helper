@@ -1,19 +1,19 @@
 import * as fs from 'fs';
 import { AccountData, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import {calculateFee, StdFee, GasPrice} from "@cosmjs/stargate";
+import {calculateFee} from "@cosmjs/stargate";
 import { SigningCosmWasmClient, UploadResult } from '@cosmjs/cosmwasm-stargate';
-import { DORCP, DORNEX, InstantiateDORCP, InstantiateDORNEX, SetTokensDORNEX } from './dorcp-helper';
-export const doriumTxFee = calculateFee(10000000, GasPrice.fromString("0.001udor"));
+import { DORNEX, InstantiateDORCP, InstantiateDORNEX } from './dorcp-helper';
+import { doriumOptions } from './base-helper';
 
 export async function getWalletAndMainAccount(mnemonic: string) {
-	const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix: "wasm" });
+	const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix: doriumOptions.bech32prefix });
 	const [account] = await wallet.getAccounts();
 
 	return {wallet, account};
 }
 
 export async function getSigningClient(rpcEndpoint: string, wallet: DirectSecp256k1HdWallet) {
-    return await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix: "wasm"});
+    return await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix: doriumOptions.bech32prefix});
 }
 
 export function readContractsJson() {
@@ -30,13 +30,14 @@ export async function uploadContractsSaveResult(cw20WasmPath: string, dorcpWasmP
 	const cw20Contract = fs.readFileSync(cw20WasmPath);
  	const dorcpContract = fs.readFileSync(dorcpWasmPath);
 	const dornexContract = fs.readFileSync(dornexPath);
+	const fee = calculateFee(doriumOptions.fees.upload, doriumOptions.gasPrice)
 
 	console.log("Uploading CW20 Contract");
-	const con_cw20 = await client.upload(senderAddress, cw20Contract, doriumTxFee);
+	const con_cw20 = await client.upload(senderAddress, cw20Contract, fee);
 	console.log("Uploading DORCP Contract");
-	const con_dorcp = await client.upload(senderAddress, dorcpContract, doriumTxFee);
+	const con_dorcp = await client.upload(senderAddress, dorcpContract, fee);
 	console.log("Uploading DORNEX Contract");
-	const con_dornex = await client.upload(senderAddress, dornexContract, doriumTxFee);
+	const con_dornex = await client.upload(senderAddress, dornexContract, fee);
 	const contracts = {
 		"contracts": {
 			cw20: {codeId: con_cw20.codeId, transactionHash: con_cw20.transactionHash},
@@ -59,8 +60,9 @@ async function instantiateValueToken(contractData: UploadResult, minter: string,
 			minter,
 		},
 	};
+	const fee = calculateFee(doriumOptions.fees.init, doriumOptions.gasPrice)
 
-	const instanceData = await client.instantiate(account.address, contractData.codeId, initMsg, "instantiating the DORCP contract", doriumTxFee);
+	const instanceData = await client.instantiate(account.address, contractData.codeId, initMsg, "instantiating the DORCP contract", fee);
 	return instanceData
 }
 
@@ -76,8 +78,9 @@ async function instantiateSobzToken(contractData: UploadResult, minter: string, 
 			minter,
 		},
 	};
+	const fee = calculateFee(doriumOptions.fees.init, doriumOptions.gasPrice)
 
-	const instanceData = await client.instantiate(account.address, contractData.codeId, initMsg, "instantiating the DORCP contract", doriumTxFee);
+	const instanceData = await client.instantiate(account.address, contractData.codeId, initMsg, "instantiating the DORCP contract", fee);
 	return instanceData
 }
 

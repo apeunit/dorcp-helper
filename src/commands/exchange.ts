@@ -1,11 +1,11 @@
 import {Command, flags} from '@oclif/command'
-import { readContractsJson, getWalletAndMainAccount, getSigningClient, doriumTxFee} from '../deploy'
+import { readContractsJson, getWalletAndMainAccount, getSigningClient} from '../deploy'
 import { CW20 } from '../cw20-helper';
 import { doriumOptions } from '../base-helper';
 import 'dotenv/config'
 import { DORNEX } from '../dorcp-helper';
 
-const { MNEMONIC_MAIN, RPC_ENDPOINT, DORNEX_CONTRACT } = process.env;
+const { MNEMONIC_MAIN, RPC_ENDPOINT } = process.env;
 export default class Exchange extends Command {
   static description = 'Send Value Token to DORNEX'
 

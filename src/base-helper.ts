@@ -1,7 +1,7 @@
 import axios from  "axios";
 import fs from "fs";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { GasPrice } from "@cosmjs/stargate";
+import { calculateFee, GasPrice } from "@cosmjs/stargate";
 import { DirectSecp256k1HdWallet, makeCosmoshubPath } from "@cosmjs/proto-signing";
 import { HdPath } from "@cosmjs/crypto";
 import path from "path";
@@ -42,10 +42,10 @@ export const doriumOptions: Options = {
   bech32prefix: 'wasm',
   feeToken: 'udor',
   faucetUrl: '',
-  hdPath: makeCosmoshubPath(0),
+  hdPath: makeCosmoshubPath(0),  // should change this, HD deriv path should be different for each chain
   defaultKeyFile: '',
   fees: {
-    upload: 1500000,
+    upload: 2000000,
     init: 500000,
     exec: 2000000,
   },
