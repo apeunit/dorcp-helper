@@ -3,7 +3,7 @@ import { readContractsJson, getWalletAndMainAccount, getSigningClient} from '../
 import { CW20 } from '../cw20-helper';
 import { doriumOptions } from '../base-helper';
 import 'dotenv/config'
-import { DORNEX } from '../dorcp-helper';
+import { DORNEX } from '../dorium-helper';
 
 const { MNEMONIC_MAIN, RPC_ENDPOINT } = process.env;
 export default class Exchange extends Command {

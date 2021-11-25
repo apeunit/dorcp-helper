@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { AccountData, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import {calculateFee} from "@cosmjs/stargate";
 import { SigningCosmWasmClient, UploadResult } from '@cosmjs/cosmwasm-stargate';
-import { DORNEX, InstantiateDORCP, InstantiateDORNEX } from './dorcp-helper';
+import { DORNEX, InstantiateDORCP, InstantiateDORNEX } from './dorium-helper';
 import { doriumOptions } from './base-helper';
 
 export async function getWalletAndMainAccount(mnemonic: string) {

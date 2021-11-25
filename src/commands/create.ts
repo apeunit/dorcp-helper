@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import { readContractsJson, getWalletAndMainAccount, getSigningClient} from '../deploy'
-import { DORCP } from '../dorcp-helper';
+import { DORCP } from '../dorium-helper';
 
 import 'dotenv/config'
 import { parseCoins } from '@cosmjs/proto-signing';
