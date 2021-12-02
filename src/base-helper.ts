@@ -49,7 +49,7 @@ export const doriumOptions: Options = {
     init: 500000,
     exec: 2000000,
   },
-  gasPrice: GasPrice.fromString("0.01udor"),
+  gasPrice: GasPrice.fromString("0.0udor"),
 }
 
 interface Network {
