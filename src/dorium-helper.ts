@@ -49,7 +49,7 @@ export async function InstantiateDORNEX(senderAddress: string, client: SigningCo
     const instantiateData = await client.instantiate(
         senderAddress,
         codeId,
-        {},
+        {owner: senderAddress},
         'DORNEX instantiate()',
         fee
     );
